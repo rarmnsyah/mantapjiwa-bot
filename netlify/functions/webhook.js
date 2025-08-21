@@ -1,46 +1,62 @@
-// Minimal Telegram webhook on Netlify (Node.js)
-exports.handler = async (event) => {
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+export async function handler(event) {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    if (!token) {
-      console.error("Missing TELEGRAM_BOT_TOKEN");
-      return { statusCode: 500, body: "No token" };
-    }
-
-    const myTelegramId = parseInt(process.env.MY_TELEGRAM_ID, 10);
+    const myId = parseInt(process.env.MY_TELEGRAM_ID, 10);
 
     const update = JSON.parse(event.body || "{}");
-    console.log("Incoming update:", update);
-    
-    const msg = update.message || update.edited_message || update.channel_post;
-    if (!msg) {
-        return { statusCode: 200, body: JSON.stringify({ status: "ignored" }) };
-    }
-    
-    const fromId = msg.from?.id;
+    const msg = update.message;
+    if (!msg) return { statusCode: 200, body: "ignored" };
+
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
     const text = msg.text || "";
-    console.log(fromId, myTelegramId);
-    
-    // ✅ Auth check
-    if (fromId !== myTelegramId) {
-      console.warn(`Unauthorized user: ${fromId}`);
-      return { statusCode: 200, body: "Unauthorized user" };
+
+    // Auth check
+    if (userId !== myId) {
+      await sendMessage(token, chatId, "🚫 Unauthorized user");
+      return { statusCode: 200, body: "unauthorized" };
     }
 
-    const reply = text
-      ? `Processed: ${text.split("").reverse().join("")}`
-      : "No text provided";
+    // Command parsing
+    const match = text.match(/^\/add\s+(.+)\s+(\d+)$/i);
+    if (!match) {
+      await sendMessage(token, chatId, "Format salah. Gunakan: /add <item> <harga>");
+      return { statusCode: 200, body: "invalid format" };
+    }
 
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: reply })
-    });
+    const item = match[1];
+    const amount = parseInt(match[2], 10);
 
-    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+    // Save to Supabase
+    const { error } = await supabase
+      .from("expenses")
+      .insert([{ item, amount }]);
+
+    if (error) {
+      console.error("DB error:", error);
+      await sendMessage(token, chatId, "❌ Gagal menyimpan data.");
+    } else {
+      await sendMessage(token, chatId, `✅ Data disimpan: ${item} - Rp${amount}`);
+    }
+
+    return { statusCode: 200, body: "ok" };
   } catch (err) {
-    console.error("Handler error:", err, "Raw body:", event.body);
-    return { statusCode: 200, body: JSON.stringify({ ok: false }) };
+    console.error("Handler error:", err);
+    return { statusCode: 500, body: "error" };
   }
-};
+}
+
+async function sendMessage(token, chatId, text) {
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text })
+  });
+}

@@ -1,0 +1,5 @@
+{
+  "name": "tg-netlify-bot",
+  "private": true,
+  "scripts": { "dev": "netlify dev" }
+}

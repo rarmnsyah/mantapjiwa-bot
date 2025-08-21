@@ -1,7 +1,8 @@
+import os
 import json
 import requests
 
-BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 def handler(event, context):

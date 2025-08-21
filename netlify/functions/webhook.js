@@ -11,16 +11,17 @@ exports.handler = async (event) => {
 
     const update = JSON.parse(event.body || "{}");
     console.log("Incoming update:", update);
-
+    
     const msg = update.message || update.edited_message || update.channel_post;
     if (!msg) {
-      return { statusCode: 200, body: JSON.stringify({ status: "ignored" }) };
+        return { statusCode: 200, body: JSON.stringify({ status: "ignored" }) };
     }
-
+    
     const fromId = msg.from?.id;
     const chatId = msg.chat.id;
     const text = msg.text || "";
-
+    console.log(fromId, myTelegramId);
+    
     // ✅ Auth check
     if (fromId !== myTelegramId) {
       console.warn(`Unauthorized user: ${fromId}`);

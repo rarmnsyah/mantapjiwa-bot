@@ -1,5 +1,10 @@
 {
   "name": "tg-netlify-bot",
   "private": true,
-  "scripts": { "dev": "netlify dev" }
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
 }

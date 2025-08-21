@@ -1,4 +1,13 @@
 // Minimal Telegram webhook on Netlify (Node.js)
+const telegram_id = process.env.MY_TELEGRAM_ID; // replace with your Telegram user ID
+
+if (message.from.id !== telegram_id) {
+  return {
+    statusCode: 200,
+    body: "Unauthorized user"
+  };
+}
+
 exports.handler = async (event) => {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;

@@ -1,13 +1,4 @@
 // Minimal Telegram webhook on Netlify (Node.js)
-const telegram_id = process.env.MY_TELEGRAM_ID; // replace with your Telegram user ID
-
-if (message.from.id !== telegram_id) {
-  return {
-    statusCode: 200,
-    body: "Unauthorized user"
-  };
-}
-
 exports.handler = async (event) => {
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -16,16 +7,29 @@ exports.handler = async (event) => {
       return { statusCode: 500, body: "No token" };
     }
 
+    const myTelegramId = parseInt(process.env.MY_TELEGRAM_ID, 10);
+
     const update = JSON.parse(event.body || "{}");
     console.log("Incoming update:", update);
 
     const msg = update.message || update.edited_message || update.channel_post;
-    if (!msg) return { statusCode: 200, body: JSON.stringify({ status: "ignored" }) };
+    if (!msg) {
+      return { statusCode: 200, body: JSON.stringify({ status: "ignored" }) };
+    }
 
+    const fromId = msg.from?.id;
     const chatId = msg.chat.id;
     const text = msg.text || "";
 
-    const reply = text ? `Processed: ${text.split("").reverse().join("")}` : "No text provided";
+    // ✅ Auth check
+    if (fromId !== myTelegramId) {
+      console.warn(`Unauthorized user: ${fromId}`);
+      return { statusCode: 200, body: "Unauthorized user" };
+    }
+
+    const reply = text
+      ? `Processed: ${text.split("").reverse().join("")}`
+      : "No text provided";
 
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",

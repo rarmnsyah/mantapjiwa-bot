@@ -32,12 +32,17 @@ export async function handler(event) {
     }
 
     const item = match[1];
-    const amount = parseInt(match[2], 10);
+    const cost = parseInt(match[2], 10);
+    let amount = 1;
+    if (match[3]) {
+      amount = parseInt(match[3], 10);
+    } 
+    const total_cost = item * amount;
 
     // Save to Supabase
     const { error } = await supabase
       .from("expenses")
-      .insert([{ item, amount }]);
+      .insert([{ item, cost, amount, total_cost}]);
 
     if (error) {
       console.error("DB error:", error);

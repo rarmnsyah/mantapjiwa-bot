@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import 'dotenv/config';
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
+  'https://rmxgcafscmvdpkjalbca.supabase.co',
   process.env.SUPABASE_ANON_KEY
 );
 

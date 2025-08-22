@@ -48,7 +48,7 @@ export async function handler(event) {
       console.error("DB error:", error);
       await sendMessage(token, chatId, "❌ Gagal menyimpan data.");
     } else {
-      await sendMessage(token, chatId, `✅ Data disimpan: ${item} - Rp${amount}`);
+      await sendMessage(token, chatId, `✅ Data disimpan: ${item} - Rp${total_cost}`);
     }
 
     return { statusCode: 200, body: "ok" };

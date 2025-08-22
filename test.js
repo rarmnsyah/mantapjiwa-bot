@@ -7,17 +7,18 @@ const rl = readline.createInterface({
 
 rl.question('Enter your name: ', (name) => {
     console.log(`Hello, ${name}!`);
-    const text = name || ""
-    const match = text.match(/^\/add\s+(.+)\s+(\d+)\s+(\d+)$/i);
-    const item = match[1];
-    const cost = parseInt(match[2], 10);
-    let amount = 1;
-    if (match[3]) {
-        amount = parseInt(match[3], 10);
-    } 
-    const total_cost = cost * amount;
+    if (name.startsWith("/add")) {
+      const regex = /^\/add\s+(\S+)\s+(\d+)(?:\s+(\d+))?(?:\s+"([^"]+)")?$/;
+      const match = name.match(regex);
+
+      const item = match[1];
+      const cost = parseInt(match[2], 10);
+      const amount = match[3] ? parseInt(match[3], 10) : 1;
+      const reason = match[4] || null;
+      const total_cost = cost * amount;
+      console.log(item, cost, amount, total_cost, reason)
+    }
     
-    console.log(item, cost, amount, total_cost)
     rl.close(); // Close the readline interface after getting input
 });
 

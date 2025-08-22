@@ -25,7 +25,7 @@ export async function handler(event) {
     }
 
     // Command parsing
-    const match = text.match(/^\/add\s+(.+)\s+(\d+)$/i);
+    const match = text.match(/^\/add\s+(.+)\s+(\d+)\s+(\d+)$/i);
     if (!match) {
       await sendMessage(token, chatId, "Format salah. Gunakan: /add <item> <harga>");
       return { statusCode: 200, body: "invalid format" };
@@ -37,7 +37,7 @@ export async function handler(event) {
     if (match[3]) {
       amount = parseInt(match[3], 10);
     } 
-    const total_cost = item * amount;
+    const total_cost = cost * amount;
 
     // Save to Supabase
     const { error } = await supabase
